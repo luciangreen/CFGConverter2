@@ -1,0 +1,1611 @@
+The existing repository describes IdeaCFG as an “Idea to CFG Converter” and already implements a modular pipeline from input and IR construction through CFG/DCG generation, optimisation, validation, explanation, and export.   The requirements below preserve that architecture while adding typed, non-chatbot-recordable evidence sources and department-specific interpretation.
+
+CFG Converter 2
+
+GitHub Copilot Agent Prolog Program Requirements
+
+Proposed repository: cfgconverter2
+Source repository to copy: https://github.com/luciangreen/cfgconverter
+Implementation language: SWI-Prolog
+Primary deliverable: PROGRAM_REQUIREMENTS.md
+
+⸻
+
+1. Project Summary
+
+CFG Converter 2 shall be created as a working copy and extension of CFG Converter.
+
+The original system converts human ideas, sentences, structured terms, concepts, relationships, and mathematical operations into:
+
+* Context-free grammar rules;
+* Executable Prolog DCGs;
+* Supporting Prolog predicates;
+* Validation reports;
+* Explanations and traceability information;
+* Exportable source files.
+
+CFG Converter 2 shall extend this process so that grammar construction can also take account of non-chatbot-recordable data.
+
+Non-chatbot-recordable data means observations, measurements, judgements, signals, indicators, records, or structured evidence that cannot be adequately represented as ordinary conversational text alone.
+
+Examples include:
+
+* Mathematical predicate formulae;
+* Scientific measurements and instrument readings;
+* Qualitative neuroolfactory unit measurements;
+* Ranked sensory observations;
+* Images, audio, sensor or laboratory metadata;
+* Temporal and spatial observations;
+* Humanities indicators;
+* Intuitional assessments;
+* Trust judgements;
+* Confidence-weighted interpretations;
+* Archival provenance;
+* Expert annotations;
+* Tacit or embodied observations represented through structured records.
+
+The system shall convert both ordinary ideas and external evidence into CFG and DCG forms whose productions, constraints, semantic arguments, and outputs reflect the supplied evidence.
+
+⸻
+
+2. Central Design Principle
+
+CFG Converter 2 shall distinguish between:
+
+1. Grammar structure
+    What sequences, alternatives, repetitions, classifications, and interpretations are permitted.
+2. Computable operations
+    Mathematical, logical, scientific, statistical, or deterministic operations that Prolog should compute directly.
+3. Evidence conditions
+    Measurements, observations, indicators, confidence values, provenance records, and expert judgements that constrain or support grammar rules.
+4. Interpretive outputs
+    Scientific classifications, mathematical results, humanities interpretations, intuitional conclusions, and explanations generated from the grammar and evidence.
+
+The guiding rule shall remain:
+
+Grammar represents structured possibilities; Prolog predicates compute operations; evidence predicates constrain or support interpretations.
+
+No arbitrary external data shall be converted directly into executable Prolog source.
+
+⸻
+
+3. Required Repository Strategy
+
+The GitHub Copilot Agent shall:
+
+1. Copy the complete contents of luciangreen/cfgconverter.
+2. Preserve the original licence, documentation history, tests, examples, and attribution.
+3. Rename the extended program to CFG Converter 2.
+4. Rename modules only where necessary.
+5. Preserve backward compatibility with the original public API.
+6. Add new modules rather than unnecessarily rewriting stable modules.
+7. Keep the original CFG Converter behaviour available through compatibility predicates.
+8. Document every intentional incompatibility.
+9. Place the requirements in PROGRAM_REQUIREMENTS.md.
+10. Maintain a staged progress log in PROGRESS.md.
+
+The original repository shall remain unchanged.
+
+⸻
+
+4. Goals
+
+CFG Converter 2 shall:
+
+* Convert ideas and structured evidence into CFG and DCG representations.
+* Support multiple academic departments through a common evidence model.
+* Separate computations from grammar productions.
+* Preserve the origin and provenance of every derived grammar rule.
+* Permit qualitative as well as quantitative data.
+* Represent uncertainty without pretending that uncertain evidence is certain.
+* Represent intuition as structured indicators rather than unexplained truth.
+* Generate executable and inspectable SWI-Prolog.
+* Avoid dependence on a chatbot at runtime.
+* Accept data produced outside conversational interfaces.
+* Allow department-specific plugins without changing the core compiler.
+* Explain why each generated rule exists.
+* Validate generated grammars against evidence and test examples.
+* Support parsing, generation, classification, and interpretation.
+* Remain simple enough to operate through a Prolog API, CLI, and REPL.
+
+⸻
+
+5. Non-Goals
+
+The first release shall not:
+
+* Train neural networks;
+* Perform unrestricted machine learning;
+* Claim that intuition is objectively correct;
+* Infer medical diagnoses automatically;
+* Replace scientific instruments or expert review;
+* Execute arbitrary code embedded in input data;
+* Require cloud services;
+* Require a chatbot;
+* Attempt to understand every possible binary file format;
+* Treat correlation as causation;
+* Convert uncertain humanities judgements into false numerical precision;
+* Guarantee that a generated grammar is a true scientific theory;
+* Use unrestricted read/1, consult/1, call/1, or term_to_atom/2 on untrusted data.
+
+⸻
+
+6. High-Level Architecture
+
+CFG Converter 2 shall preserve the existing staged architecture and add an evidence-processing layer.
+
+Required pipeline:
+
+Input source
+   ↓
+Source adapter
+   ↓
+Typed evidence records
+   ↓
+Validation and normalisation
+   ↓
+Department profile
+   ↓
+Evidence-to-concept mapping
+   ↓
+Intermediate representation
+   ↓
+Concept and relation extraction
+   ↓
+Operation extraction
+   ↓
+Evidence constraint extraction
+   ↓
+Pattern discovery
+   ↓
+CFG generation
+   ↓
+Attributed DCG generation
+   ↓
+Grammar transformations
+   ↓
+Factoring and recursion analysis
+   ↓
+Validation
+   ↓
+Optimisation
+   ↓
+Code generation
+   ↓
+Explanation, provenance and export
+
+⸻
+
+7. Required New Modules
+
+The following modules shall be added.
+
+7.1 cfg2_api.pl
+
+Main public API.
+
+Required exports:
+
+:- module(cfg2_api, [
+    data_to_cfg/4,
+    data_to_cfg/5,
+    evidence_to_cfg/4,
+    evidence_to_cfg/5,
+    hybrid_to_cfg/5,
+    hybrid_to_cfg/6,
+    load_evidence/4,
+    normalise_evidence/4,
+    validate_evidence/3,
+    compile_department/4,
+    parse_with_evidence/5,
+    generate_with_evidence/5,
+    interpret_with_evidence/5,
+    explain_derivation/3,
+    explain_evidence_use/3,
+    export_cfg2/3,
+    export_cfg2/4
+]).
+
+The original idea_to_cfg/3 and idea_to_cfg/4 interface shall remain available.
+
+⸻
+
+7.2 cfg2_evidence.pl
+
+Defines the canonical evidence representation.
+
+Canonical form:
+
+evidence(
+    EvidenceId,
+    Department,
+    Type,
+    Subject,
+    Value,
+    Unit,
+    Context,
+    Confidence,
+    Provenance,
+    Time,
+    Location,
+    Metadata
+).
+
+Example:
+
+evidence(
+    e17,
+    neuroscience,
+    qualitative_measurement,
+    odour_response,
+    strong,
+    neuroolfactory_unit,
+    context(participant(p1), stimulus(rose)),
+    0.82,
+    provenance(observer(dr_smith), instrument(panel_v2)),
+    time('2026-08-03T14:00:00+10:00'),
+    location(laboratory_2),
+    [scale(ordinal), consent_recorded(true)]
+).
+
+Every field except optional metadata shall have a documented meaning.
+
+⸻
+
+7.3 cfg2_sources.pl
+
+Defines the source-adapter protocol.
+
+Required adapter interface:
+
+source_adapter(+Format, +Source, +Options, -EvidenceRecords).
+
+Supported first-release formats:
+
+* prolog_terms
+* csv
+* tsv
+* json
+* json_lines
+* text
+* key_value
+* observation_table
+* formula_terms
+* indicator_records
+
+Optional later formats:
+
+* XML;
+* RDF;
+* SQLite;
+* audio feature tables;
+* image metadata;
+* laboratory instrument exports;
+* spreadsheet formats.
+
+Binary media shall be represented by extracted metadata or feature records, not interpreted directly in the first release.
+
+⸻
+
+7.4 cfg2_departments.pl
+
+Registers department profiles.
+
+Required protocol:
+
+department_profile(
+    +Department,
+    -AcceptedEvidenceTypes,
+    -OutputTypes,
+    -DefaultPolicies
+).
+
+Required initial profiles:
+
+* mathematics;
+* formal logic;
+* physics;
+* chemistry;
+* biology;
+* neuroscience;
+* neuroolfaction;
+* psychology;
+* social science;
+* history;
+* philosophy;
+* literature;
+* visual arts;
+* music;
+* general humanities;
+* interdisciplinary.
+
+⸻
+
+7.5 cfg2_measurements.pl
+
+Handles quantitative and qualitative measurements.
+
+Required capabilities:
+
+* Unit validation;
+* Unit aliases;
+* Ordinal scales;
+* Nominal scales;
+* Interval and ratio scales;
+* Qualitative unit names;
+* Range checking;
+* Missing values;
+* Detection limits;
+* Approximate measurements;
+* Repeated observations;
+* Conflicting measurements;
+* Aggregation policies;
+* Conversion only where a declared conversion exists.
+
+The system shall not invent conversions between incomparable units.
+
+⸻
+
+7.6 cfg2_indicators.pl
+
+Represents humanities and intuitional indicators.
+
+Canonical form:
+
+indicator(
+    IndicatorId,
+    Domain,
+    Subject,
+    Signal,
+    Direction,
+    Strength,
+    Reliability,
+    Context,
+    Provenance
+).
+
+Example:
+
+indicator(
+    i4,
+    literary_analysis,
+    narrator,
+    repeated_evasion,
+    supports(unreliable_narrator),
+    moderate,
+    0.70,
+    chapter(3),
+    provenance(reader_annotation(a12))
+).
+
+The system shall distinguish:
+
+* Indicator observed;
+* Interpretation proposed;
+* Interpretation supported;
+* Interpretation contradicted;
+* Interpretation undecided.
+
+⸻
+
+7.7 cfg2_intuition.pl
+
+Handles structured intuitional input.
+
+Intuition shall be represented as an evidence-bearing judgement:
+
+intuition(
+    IntuitionId,
+    Observer,
+    Subject,
+    ProposedConclusion,
+    Indicators,
+    Confidence,
+    Alternatives,
+    Context,
+    Provenance
+).
+
+Example:
+
+intuition(
+    intuition_7,
+    expert(historian_1),
+    document(letter_42),
+    authored_under_pressure,
+    [indicator(word_choice), indicator(omission_pattern)],
+    0.64,
+    [political_caution, later_editing],
+    archive_collection_3,
+    provenance(annotation_session_9)
+).
+
+The program shall never compile an intuition directly to an unconditional fact.
+
+It shall compile it into:
+
+* A guarded DCG branch;
+* A defeasible interpretation;
+* A confidence-bearing semantic output;
+* Or a candidate interpretation requiring validation.
+
+⸻
+
+7.8 cfg2_constraints.pl
+
+Converts evidence into grammar constraints.
+
+Required constraint forms:
+
+requires(EvidenceCondition).
+supports(EvidenceCondition).
+contradicts(EvidenceCondition).
+excludes(EvidenceCondition).
+prefers(EvidenceCondition).
+scores(ScoreExpression).
+bounded_by(Lower, Upper).
+observed_at(TimeCondition).
+located_at(LocationCondition).
+derived_from(SourceIds).
+
+Constraints shall be represented in the IR and translated safely into DCG semantic goals.
+
+⸻
+
+7.9 cfg2_provenance.pl
+
+Tracks source-to-output traceability.
+
+Every generated item shall be traceable to:
+
+* Input file or stream;
+* Record number;
+* Field;
+* Source text span where applicable;
+* Evidence identifier;
+* Transformation stages;
+* Department rule;
+* Generated CFG rule;
+* Generated DCG clause;
+* Final interpretation.
+
+Required query:
+
+provenance_chain(+GeneratedItemId, -Chain).
+
+⸻
+
+7.10 cfg2_uncertainty.pl
+
+Provides explicit uncertainty representations.
+
+Supported policies:
+
+* Boolean;
+* Three-valued: supported, unsupported, unknown;
+* Confidence interval;
+* Ordinal confidence;
+* Numeric confidence between 0.0 and 1.0;
+* Ranked alternatives;
+* Evidence count;
+* Weighted indicators.
+
+No single uncertainty interpretation shall be imposed on every department.
+
+⸻
+
+7.11 cfg2_semantics.pl
+
+Generates attributed semantic outputs from parses.
+
+Example output:
+
+interpretation(
+    classification(likely_floral_response),
+    confidence(0.82),
+    evidence([e17, e18]),
+    alternatives([mixed_response]),
+    provenance([rule(r14), profile(neuroolfaction)])
+).
+
+⸻
+
+7.12 cfg2_schema.pl
+
+Defines and validates source schemas.
+
+Required predicates:
+
+register_schema/2.
+validate_schema/3.
+schema_field/4.
+schema_to_evidence/4.
+
+Schemas shall define:
+
+* Field names;
+* Types;
+* Required fields;
+* Units;
+* Allowed values;
+* Null handling;
+* Confidence representation;
+* Provenance fields;
+* Department mappings.
+
+⸻
+
+8. Intermediate Representation
+
+The original IR shall be extended rather than replaced.
+
+Required conceptual form:
+
+cfg2_ir(
+    Name,
+    Metadata,
+    Concepts,
+    Relations,
+    Operations,
+    Evidence,
+    Indicators,
+    Constraints,
+    Interpretations,
+    Sources
+).
+
+Each IR element shall contain a stable identifier.
+
+Example:
+
+ir_constraint(
+    c12,
+    rule_candidate(response_category),
+    requires(measurement_above(e17, moderate)),
+    sources([e17]),
+    department(neuroolfaction)
+).
+
+The IR shall remain pure Prolog data.
+
+⸻
+
+9. Department-Neutral Evidence Model
+
+The core compiler shall not hard-code the epistemology of one department.
+
+It shall provide common abstractions:
+
+* Entity;
+* Event;
+* Observation;
+* Measurement;
+* Formula;
+* Category;
+* Sequence;
+* Alternative;
+* Repetition;
+* Temporal relation;
+* Spatial relation;
+* Causal proposal;
+* Indicator;
+* Constraint;
+* Interpretation;
+* Confidence;
+* Provenance.
+
+Department plugins shall map their data into these abstractions.
+
+⸻
+
+10. Mathematics Requirements
+
+Mathematics inputs may contain predicate formulae, equations, inequalities, domains, assumptions, definitions, and proof-step relationships.
+
+Example input:
+
+formula(f1, forall(X, implies(even(X), integer(X)))).
+formula(f2, greater_than(X, 0)).
+assumption(a1, member(X, integers)).
+
+Required behaviour:
+
+1. Mathematical expressions shall be extracted before ordinary grammar generation.
+2. Formulae shall be converted to safe Prolog terms.
+3. Declared operations shall become Prolog predicates or constraints.
+4. Grammar rules shall describe valid expression or proof structures.
+5. Mathematical computation shall not be simulated by terminal strings.
+6. The generated DCG may carry expression trees as semantic arguments.
+7. Variable scope shall be preserved.
+8. Unsupported formulae shall remain quoted data with diagnostics.
+9. CLP(FD) may be used for integer constraints.
+10. CLP(R) may be optional for real-number constraints.
+11. No formula text shall be passed to unrestricted call/1.
+
+Example output:
+
+proof_step(step(modus_ponens, A, B)) -->
+    premise(A),
+    premise(implies(A, B)),
+    { valid_formula(A), valid_formula(B) }.
+
+⸻
+
+11. Science Requirements
+
+Scientific evidence may include:
+
+* Measurements;
+* Qualitative observations;
+* Instrument metadata;
+* Experimental conditions;
+* Biological categories;
+* Chemical states;
+* Physical dimensions;
+* Repeated trials;
+* Control groups;
+* Error bounds;
+* Detection limits;
+* Observer judgements.
+
+The system shall represent the difference between:
+
+* Raw observation;
+* Normalised observation;
+* Derived measurement;
+* Classification;
+* Hypothesis;
+* Conclusion.
+
+A generated grammar shall not collapse these stages.
+
+Example:
+
+response(strong_floral) -->
+    stimulus(floral),
+    measured_response(Level),
+    {
+        evidence_value(Level, Value),
+        qualitative_at_least(Value, strong)
+    }.
+
+⸻
+
+12. Qualitative Neuroolfactory Units
+
+CFG Converter 2 shall include an example department plugin for qualitative neuroolfactory units.
+
+This plugin is a software representation format, not a claim that the unit system is scientifically established.
+
+Required sample scale:
+
+neuroolfactory_level(none, 0).
+neuroolfactory_level(trace, 1).
+neuroolfactory_level(weak, 2).
+neuroolfactory_level(moderate, 3).
+neuroolfactory_level(strong, 4).
+neuroolfactory_level(intense, 5).
+
+The scale shall be configurable.
+
+Possible evidence dimensions:
+
+* Perceived intensity;
+* Recognition confidence;
+* Pleasantness;
+* Familiarity;
+* Emotional association;
+* Memory activation;
+* Adaptation;
+* Response latency;
+* Cross-modal association;
+* Observer reliability.
+
+Required example CFG:
+
+<olfactory-response> ::= <no-response>
+                       | <weak-response>
+                       | <moderate-response>
+                       | <strong-response>
+
+Required example DCG:
+
+olfactory_response(Response, EvidenceIds) -->
+    olfactory_observation(Stimulus, Level, EvidenceId),
+    {
+        classify_olfactory_level(Level, Response),
+        EvidenceIds = [EvidenceId],
+        valid_stimulus(Stimulus)
+    }.
+
+⸻
+
+13. Humanities Requirements
+
+Humanities data may include:
+
+* Textual passages;
+* Annotations;
+* Historical records;
+* Source provenance;
+* Conflicting accounts;
+* Symbolic motifs;
+* Stylistic indicators;
+* Expert judgements;
+* Interpretive traditions;
+* Cultural context;
+* Absences or omissions;
+* Intuitional indicators.
+
+The system shall permit multiple simultaneous interpretations.
+
+Example grammar:
+
+<document-interpretation> ::= <literal-reading>
+                            | <political-reading>
+                            | <symbolic-reading>
+                            | <uncertain-reading>
+
+The generated result shall include evidence and alternatives:
+
+interpretation(
+    symbolic_reading,
+    supported_by([i4, i9]),
+    contradicted_by([i11]),
+    confidence(moderate),
+    alternatives([political_reading])
+).
+
+The system shall not output a humanities interpretation as a certain fact unless the source explicitly declares it as such.
+
+⸻
+
+14. Intuitional Output Requirements
+
+“Intuitional output” shall mean a conclusion selected by trusting one or more declared indicators.
+
+It shall not mean unexplained guessing.
+
+Required reasoning pattern:
+
+intuitional_output(Conclusion, Evidence, Confidence) :-
+    candidate_conclusion(Conclusion),
+    supporting_indicators(Conclusion, Evidence),
+    indicator_reliability(Evidence, Reliability),
+    intuition_policy(Policy),
+    apply_intuition_policy(Policy, Reliability, Confidence).
+
+Required policies:
+
+* strict: all mandatory indicators present;
+* balanced: supporting evidence exceeds contradicting evidence;
+* expert_weighted: reliability depends on declared expertise;
+* plural: return all sufficiently supported interpretations;
+* cautious: return undecided when evidence is weak;
+* custom(PredicateName): allowed only for pre-registered safe predicates.
+
+⸻
+
+15. CFG Output Requirements
+
+The system shall produce a declarative CFG independent of Prolog execution details.
+
+Canonical rule:
+
+cfg_rule(
+    RuleId,
+    LeftHandSide,
+    RightHandSide,
+    Annotations
+).
+
+Example:
+
+cfg_rule(
+    r14,
+    olfactory_response,
+    [floral_stimulus, strong_measurement],
+    [
+        requires(e17),
+        confidence_policy(weighted),
+        department(neuroolfaction),
+        derived_from([e17, schema_olfactory_v1])
+    ]
+).
+
+A plain compatibility format such as cfg_rule(LHS, RHS) shall remain exportable.
+
+⸻
+
+16. DCG Output Requirements
+
+Generated DCGs shall support semantic arguments.
+
+Preferred general form:
+
+nonterminal(ParseTree, Semantics, EvidenceState) -->
+    ...
+
+Example:
+
+document_interpretation(
+    tree(symbolic_reading, Children),
+    interpretation(symbolic_reading, Confidence),
+    evidence_state(Used, Remaining)
+) -->
+    symbolic_indicator(Child1, I1),
+    contextual_indicator(Child2, I2),
+    {
+        Children = [Child1, Child2],
+        combine_indicator_confidence([I1, I2], Confidence),
+        Used = [I1, I2],
+        evidence_remaining([I1, I2], Remaining)
+    }.
+
+Generated semantic goals shall call only known, exported, approved predicates.
+
+⸻
+
+17. Hybrid Input
+
+The system shall accept combinations of:
+
+* Natural-language descriptions;
+* Structured Prolog terms;
+* Formulae;
+* Tables;
+* Evidence records;
+* Indicator records;
+* Department schemas.
+
+Required call:
+
+hybrid_to_cfg(
+    Name,
+    Department,
+    TextInput,
+    DataSources,
+    Options,
+    Result
+).
+
+Example:
+
+?- hybrid_to_cfg(
+       rose_response,
+       neuroolfaction,
+       ['A strong recognised floral response indicates category A.'],
+       [csv('observations.csv', olfactory_schema)],
+       [confidence_policy(weighted)],
+       Result
+   ).
+
+⸻
+
+18. Public Result Structure
+
+The result shall be explicit and inspectable:
+
+result(
+    project(Name),
+    department(Department),
+    schemas(Schemas),
+    sources(Sources),
+    evidence(Evidence),
+    ir(IR),
+    cfg(CFGRules, CFGText),
+    dcg(DCGClauses),
+    operations(Operations),
+    constraints(Constraints),
+    interpretations(Interpretations),
+    module(ModuleText),
+    explanations(Explanations),
+    diagnostics(Diagnostics)
+).
+
+Large sections may be stored in handles or files when requested, but the default test representation shall be pure Prolog data.
+
+⸻
+
+19. Input Validation
+
+The system shall reject or diagnose:
+
+* Malformed evidence records;
+* Unknown units;
+* Missing required fields;
+* Invalid confidence values;
+* Undeclared department profiles;
+* Circular schema definitions;
+* Unsafe predicate references;
+* Unbound identifiers;
+* Duplicate evidence identifiers;
+* Impossible ranges;
+* Invalid timestamps;
+* Unsupported file formats;
+* Ambiguous source encodings;
+* Conflicting unit declarations.
+
+Validation errors shall include:
+
+* File;
+* Record;
+* Field;
+* Evidence identifier;
+* Expected form;
+* Actual value;
+* Suggested correction.
+
+⸻
+
+20. Missing and Conflicting Data
+
+Missing values shall be represented explicitly:
+
+missing.
+unknown.
+not_recorded.
+not_applicable.
+below_detection_limit.
+
+Conflicts shall not be silently resolved.
+
+Required conflict output:
+
+evidence_conflict(
+    ConflictId,
+    Subject,
+    EvidenceIds,
+    ConflictType,
+    ResolutionStatus
+).
+
+Supported resolution policies:
+
+* retain all;
+* prefer newest;
+* prefer highest reliability;
+* prefer named source;
+* average compatible numeric values;
+* majority indicator;
+* require human review.
+
+The default shall be retain_all.
+
+⸻
+
+21. Confidence and Trust
+
+Confidence shall attach to a proposition or interpretation, not merely to an entire file.
+
+The system shall distinguish:
+
+* Measurement uncertainty;
+* Source reliability;
+* Observer confidence;
+* Interpretation confidence;
+* Grammar-rule support;
+* Model confidence.
+
+Combining confidence values shall require a declared policy.
+
+The compiler shall not assume that two confidence values are statistically independent.
+
+⸻
+
+22. Provenance and Explanation
+
+Required explanation queries:
+
+explain_derivation(+ItemId, +Result, -Explanation).
+explain_evidence_use(+EvidenceId, +Result, -Uses).
+
+Example explanation:
+
+Rule r14 was generated because records e17 and e18 classified the
+response as strong on the configured ordinal neuroolfactory scale.
+The branch is guarded by measurement validity and stimulus-category
+checks. Confidence 0.82 came from the weighted-observer policy.
+
+Explanations shall distinguish:
+
+* Direct source statement;
+* Computed result;
+* Department mapping;
+* Heuristic inference;
+* Intuitional inference;
+* Generated grammar structure.
+
+⸻
+
+23. Grammar Optimisation
+
+Existing CFG transformations shall continue to operate, including where applicable:
+
+* Duplicate-rule removal;
+* Unreachable-rule removal;
+* Unproductive-rule removal;
+* Prefix factoring;
+* Suffix factoring;
+* Unit-production simplification;
+* Left-recursion handling;
+* Recursion analysis;
+* Optional and repetition expansion;
+* Rule minimisation.
+
+Optimisation shall preserve evidence annotations.
+
+Two rules with identical syntax but materially different evidence constraints shall not be merged unless their annotations are safely combined.
+
+⸻
+
+24. Safety Requirements
+
+The program shall:
+
+* Use allow-listed predicates in generated semantic actions;
+* Parse external terms with restricted syntax;
+* Treat all imported strings as data;
+* Avoid shell execution;
+* Avoid unrestricted module loading;
+* Avoid dynamic assertion of unvalidated clauses;
+* Prevent path traversal during export;
+* Limit file sizes and record counts through options;
+* Limit grammar expansion;
+* Detect recursive generation without a bound;
+* Avoid writing outside the requested export directory;
+* Preserve source data without silently modifying it.
+
+Generated code shall contain no calls to unknown predicates.
+
+⸻
+
+25. Performance Requirements
+
+The system shall:
+
+* Stream CSV, TSV, JSON Lines, and large observation tables where practical;
+* Avoid loading all source data when only schema discovery is needed;
+* Index evidence by identifier, department, type, and subject;
+* Cache validated schemas;
+* Avoid repeatedly normalising the same evidence;
+* Bound grammar-generation depth;
+* Detect combinatorial grammar growth;
+* Warn before producing excessively large CFGs;
+* Support deterministic operation where nondeterminism is unnecessary.
+
+Suggested warning threshold:
+
+max_generated_rules(10000).
+
+The threshold shall be configurable.
+
+⸻
+
+26. Required Options
+
+At minimum:
+
+[
+    department(Department),
+    input_format(Format),
+    schema(Schema),
+    confidence_policy(Policy),
+    conflict_policy(Policy),
+    missing_value_policy(Policy),
+    preserve_provenance(true),
+    generate_cfg(true),
+    generate_dcg(true),
+    semantic_arguments(true),
+    optimise(true),
+    eliminate_left_recursion(true),
+    max_rules(10000),
+    max_depth(50),
+    strict_units(true),
+    intuition_policy(cautious),
+    explanation_level(full)
+]
+
+Defaults shall be documented.
+
+⸻
+
+27. CLI Requirements
+
+Required commands:
+
+cfg2 convert INPUT
+cfg2 convert INPUT --department neuroscience
+cfg2 convert INPUT --schema olfactory_schema
+cfg2 validate INPUT
+cfg2 inspect INPUT
+cfg2 explain ITEM_ID
+cfg2 export INPUT --format prolog
+cfg2 export INPUT --format cfg
+cfg2 export INPUT --format json
+cfg2 test
+
+The CLI shall return a non-zero exit status for fatal errors.
+
+⸻
+
+28. REPL Requirements
+
+Required REPL commands:
+
+load <source>
+schema <schema-name>
+department <department-name>
+convert
+show evidence
+show cfg
+show dcg
+show interpretations
+explain <item-id>
+validate
+export <format> <path>
+clear
+help
+quit
+
+The REPL shall not require a chatbot.
+
+⸻
+
+29. Example 1: Mathematics
+
+Input:
+
+[
+    formula(f1, plus(2, 3, 5)),
+    formula(f2, implies(even(X), integer(X))),
+    relation(sequence, [assumption, derivation, conclusion])
+].
+
+Expected conceptual CFG:
+
+<proof> ::= <assumption> <derivation> <conclusion>
+
+Expected DCG characteristic:
+
+proof(Tree, Result, Evidence) -->
+    assumption(A),
+    derivation(A, D),
+    conclusion(D, C),
+    {
+        validate_proof_chain(A, D, C),
+        Tree = proof(A, D, C),
+        Result = C,
+        Evidence = [f1, f2]
+    }.
+
+⸻
+
+30. Example 2: Neuroolfactory Measurement
+
+Input:
+
+evidence(
+    e1,
+    neuroolfaction,
+    qualitative_measurement,
+    response_intensity,
+    strong,
+    neuroolfactory_unit,
+    context(stimulus(rose)),
+    0.82,
+    provenance(observer(o1)),
+    time(t1),
+    location(lab),
+    []
+).
+
+Expected interpretation:
+
+interpretation(
+    strong_olfactory_response,
+    confidence(0.82),
+    evidence([e1]),
+    alternatives([])
+).
+
+Expected grammar branch:
+
+olfactory_response(strong, [e1]) -->
+    floral_stimulus,
+    {
+        evidence_measurement(e1, response_intensity, strong),
+        evidence_valid(e1)
+    }.
+
+⸻
+
+31. Example 3: Humanities Intuition
+
+Input:
+
+intuition(
+    in1,
+    expert(reader_1),
+    poem(p1),
+    theme(displacement),
+    [
+        indicator(repeated_departure_images),
+        indicator(fragmented_geography)
+    ],
+    0.68,
+    [theme(memory), theme(exile)],
+    stanza_range(1, 5),
+    provenance(annotation_set(a1))
+).
+
+Expected output:
+
+interpretation(
+    theme(displacement),
+    confidence(0.68),
+    evidence([in1]),
+    alternatives([theme(memory), theme(exile)]),
+    status(supported_not_proven)
+).
+
+⸻
+
+32. Required Test Categories
+
+Use plunit.
+
+32.1 Compatibility tests
+
+* Original text-to-CFG examples still pass.
+* Original public API remains usable.
+* Existing CFG and DCG generation remains valid.
+* Existing export formats continue to work.
+
+32.2 Source-adapter tests
+
+* CSV;
+* TSV;
+* JSON;
+* JSON Lines;
+* Prolog terms;
+* Observation tables;
+* Formula terms;
+* Invalid encodings;
+* Missing files;
+* Large streamed input.
+
+32.3 Schema tests
+
+* Required fields;
+* Optional fields;
+* Unknown fields;
+* Wrong types;
+* Unit mismatch;
+* Duplicate IDs;
+* Invalid confidence;
+* Default values.
+
+32.4 Department tests
+
+At least one complete fixture for:
+
+* Mathematics;
+* Natural science;
+* Neuroolfaction;
+* History;
+* Literary interpretation;
+* Philosophy;
+* Interdisciplinary analysis.
+
+32.5 Grammar tests
+
+* Alternatives;
+* Sequences;
+* Optionals;
+* Repetitions;
+* Recursion;
+* Evidence-guarded branches;
+* Semantic arguments;
+* Conflicting evidence;
+* Missing evidence;
+* Multiple interpretations.
+
+32.6 Provenance tests
+
+* Every generated rule has a source;
+* Evidence can be traced to generated clauses;
+* Optimisation preserves provenance;
+* Error messages retain source locations.
+
+32.7 Safety tests
+
+* Embedded Prolog injection;
+* Path traversal;
+* Unsafe predicate names;
+* Excessive recursion;
+* Excessive grammar expansion;
+* Malformed terms;
+* Unsupported source types.
+
+32.8 Determinism tests
+
+Predicates documented as det shall leave no choicepoints.
+
+⸻
+
+33. Acceptance Tests
+
+The project is accepted only when all of the following pass.
+
+Acceptance Test A
+
+Given ordinary text accepted by CFG Converter, CFG Converter 2 produces an equivalent CFG and DCG.
+
+Acceptance Test B
+
+Given a CSV file of typed qualitative neuroolfactory observations, the system produces:
+
+* Valid evidence records;
+* A CFG;
+* An executable DCG;
+* At least one evidence-bearing interpretation;
+* A provenance explanation.
+
+Acceptance Test C
+
+Given mathematical formula terms, the system separates formula computation from grammar structure.
+
+Acceptance Test D
+
+Given two conflicting historical indicators, the system preserves both and reports an unresolved conflict by default.
+
+Acceptance Test E
+
+Given an intuitional conclusion with weak indicators, the cautious policy returns undecided or supported_not_proven, not true.
+
+Acceptance Test F
+
+Given malicious text containing a Prolog goal, the text remains data and is never executed.
+
+Acceptance Test G
+
+Given an evidence identifier, the system can identify every grammar rule, DCG clause, and interpretation that used it.
+
+Acceptance Test H
+
+All generated Prolog modules load successfully in the supported SWI-Prolog version.
+
+⸻
+
+34. Documentation Requirements
+
+Required files:
+
+README.md
+PROGRAM_REQUIREMENTS.md
+ARCHITECTURE.md
+EVIDENCE_MODEL.md
+DEPARTMENT_PROFILES.md
+SCHEMA_GUIDE.md
+SECURITY.md
+REPL.md
+CLI.md
+EXAMPLES.md
+PROGRESS.md
+CHANGELOG.md
+
+The README shall include:
+
+* Purpose;
+* Installation;
+* First example;
+* Data-to-CFG example;
+* Neuroolfactory example;
+* Humanities example;
+* Safety warning;
+* API summary;
+* Test command.
+
+⸻
+
+35. Suggested Directory Layout
+
+cfgconverter2/
+├── README.md
+├── PROGRAM_REQUIREMENTS.md
+├── ARCHITECTURE.md
+├── EVIDENCE_MODEL.md
+├── DEPARTMENT_PROFILES.md
+├── SECURITY.md
+├── prolog/
+│   ├── cfg2_api.pl
+│   ├── cfg2_evidence.pl
+│   ├── cfg2_sources.pl
+│   ├── cfg2_schema.pl
+│   ├── cfg2_departments.pl
+│   ├── cfg2_measurements.pl
+│   ├── cfg2_indicators.pl
+│   ├── cfg2_intuition.pl
+│   ├── cfg2_constraints.pl
+│   ├── cfg2_uncertainty.pl
+│   ├── cfg2_provenance.pl
+│   ├── cfg2_semantics.pl
+│   ├── cfg2_cfg.pl
+│   ├── cfg2_dcg.pl
+│   ├── cfg2_codegen.pl
+│   ├── cfg2_validate.pl
+│   ├── cfg2_explain.pl
+│   ├── cfg2_cli.pl
+│   └── cfg2_repl.pl
+├── departments/
+│   ├── mathematics.pl
+│   ├── natural_science.pl
+│   ├── neuroolfaction.pl
+│   ├── humanities.pl
+│   └── interdisciplinary.pl
+├── schemas/
+│   ├── olfactory_schema.pl
+│   ├── formula_schema.pl
+│   └── indicator_schema.pl
+├── examples/
+│   ├── mathematics/
+│   ├── neuroolfaction/
+│   ├── history/
+│   └── literature/
+└── tests/
+    ├── test_api.pl
+    ├── test_sources.pl
+    ├── test_schema.pl
+    ├── test_departments.pl
+    ├── test_cfg.pl
+    ├── test_dcg.pl
+    ├── test_provenance.pl
+    └── test_security.pl
+
+The Agent may adapt this layout to preserve compatibility with the copied project.
+
+⸻
+
+36. Copilot Agent Development Workflow
+
+The GitHub Copilot Agent shall work in stages.
+
+Stage 1: Copy and baseline
+
+* Copy CFG Converter;
+* Rename project-facing documentation;
+* Run all original tests;
+* Record baseline behaviour;
+* Do not extend functionality until the baseline passes.
+
+Stage 2: Evidence model
+
+* Implement canonical evidence terms;
+* Add validation;
+* Add provenance;
+* Add unit tests.
+
+Stage 3: Source adapters and schemas
+
+* Implement Prolog term, CSV, TSV, JSON, and JSON Lines adapters;
+* Implement schema validation;
+* Add fixtures and malformed-input tests.
+
+Stage 4: Department architecture
+
+* Add profile registry;
+* Implement mathematics, science, neuroolfaction, and humanities profiles;
+* Keep department logic outside the compiler core.
+
+Stage 5: IR extension
+
+* Extend the IR with evidence, constraints, indicators, and interpretations;
+* Preserve source references;
+* Test backward compatibility.
+
+Stage 6: CFG and DCG integration
+
+* Generate evidence-annotated CFG;
+* Generate attributed DCGs;
+* Restrict semantic actions to approved predicates;
+* Add parse and generation tests.
+
+Stage 7: Intuition and uncertainty
+
+* Implement intuitional evidence structures;
+* Add cautious and plural policies;
+* Test conflicting and weak evidence.
+
+Stage 8: Explanation and export
+
+* Implement derivation explanations;
+* Implement evidence-use queries;
+* Export Prolog, CFG text, JSON, and trace reports.
+
+Stage 9: CLI and REPL
+
+* Add commands;
+* Add help;
+* Add integration tests.
+
+Stage 10: Final verification
+
+* Run the complete test suite;
+* Load every generated example module;
+* Run security tests;
+* Review documentation;
+* Update PROGRESS.md;
+* Ensure no placeholder predicates remain.
+
+At every stage, the Agent shall:
+
+1. Implement the stage;
+2. Add unit tests;
+3. Add integration tests where appropriate;
+4. Run the full existing test suite;
+5. Fix failures without weakening tests;
+6. Update documentation;
+7. Review the implementation for safety and simplicity;
+8. Record progress.
+
+⸻
+
+37. Coding Standards
+
+* Use SWI-Prolog module declarations.
+* Add mode and determinism comments.
+* Prefer pure predicates.
+* Pass state explicitly where practical.
+* Keep parsing, validation, transformation, and export separate.
+* Avoid global dynamic state except for controlled registries or caches.
+* Use setup_call_cleanup/3 for streams.
+* Use library(error) for type checking.
+* Use library(option) for options.
+* Use library(csv) and library(http/json) where suitable.
+* Use plunit.
+* Avoid cuts unless their determinism purpose is documented and tested.
+* Avoid meta-calls from untrusted data.
+* Never suppress diagnostics merely to make tests pass.
+
+⸻
+
+38. Definition of Done
+
+CFG Converter 2 is complete when:
+
+* It remains a functional copy of CFG Converter;
+* It accepts ordinary idea inputs;
+* It accepts structured non-chatbot-recordable evidence;
+* It supports the required department profiles;
+* It generates CFG and executable DCG output;
+* Generated rules take measurements, indicators, confidence, and provenance into account;
+* Mathematics is computed through predicates rather than encoded as grammar text;
+* Scientific qualitative measurements are supported;
+* Humanities intuitional outputs remain qualified and evidence-bearing;
+* Every important derivation can be explained;
+* Unsafe imported content is never executed;
+* All tests pass;
+* All generated example modules load in SWI-Prolog;
+* Documentation contains no unresolved placeholders;
+* PROGRESS.md reports every stage as complete.
+
+⸻
+
+39. Final Agent Instruction
+
+Implement the simplest clear architecture that satisfies these requirements.
+
+Do not imitate certainty where the input contains uncertainty.
+
+Do not convert intuition into an unconditional fact.
+
+Do not hide computations inside grammar terminals.
+
+Do not discard conflicting evidence.
+
+Do not break the original CFG Converter interface without a documented reason.
+
+Continue implementing, testing, documenting, and correcting the program until the complete test suite passes.
+
+This version is ready to paste into PROGRAM_REQUIREMENTS.md.
