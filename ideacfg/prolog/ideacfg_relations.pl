@@ -38,6 +38,8 @@ extract_relations_from_element(IdeaName, assumption(Id, Text, _, Src), Relations
     ->  Relations = [Rep]
     ;   detect_causal(Id, Tokens, Src, Causal)
     ->  Relations = [Causal]
+    ;   detect_declarative(Id, Tokens, Src, Decl)
+    ->  Relations = [Decl]
     ;   Relations = []
     ),
     (   Relations = []
@@ -244,3 +246,25 @@ interleave_commas([], []).
 interleave_commas([W], [W]) :- !.
 interleave_commas([W|Ws], [W, ','|Rest]) :-
     interleave_commas(Ws, Rest).
+
+% Declarative: simple SVO sentence — extract nouns following articles.
+% e.g. "A cat sits on a mat." → sequence([cat, mat])
+detect_declarative(Id, Tokens, Src, sequence(SeqId, Nouns, [], Src)) :-
+    extract_nouns_after_articles(Tokens, Nouns),
+    length(Nouns, N), N >= 2,
+    atomic_list_concat([Id, '_seq'], SeqId).
+
+extract_nouns_after_articles([], []).
+extract_nouns_after_articles([Art, Noun | Rest], [Noun | Nouns]) :-
+    article(Art),
+    atom(Noun),
+    \+ connector(Noun),
+    !,
+    extract_nouns_after_articles(Rest, Nouns).
+extract_nouns_after_articles([Art, NonNoun | Rest], Nouns) :-
+    article(Art),
+    ( \+ atom(NonNoun) ; connector(NonNoun) ),
+    !,
+    extract_nouns_after_articles([NonNoun | Rest], Nouns).
+extract_nouns_after_articles([_ | Rest], Nouns) :-
+    extract_nouns_after_articles(Rest, Nouns).
