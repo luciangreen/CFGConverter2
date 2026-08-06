@@ -261,5 +261,10 @@ extract_nouns_after_articles([Art, Noun | Rest], [Noun | Nouns]) :-
     \+ connector(Noun),
     !,
     extract_nouns_after_articles(Rest, Nouns).
+extract_nouns_after_articles([Art, NonNoun | Rest], Nouns) :-
+    article(Art),
+    ( \+ atom(NonNoun) ; connector(NonNoun) ),
+    !,
+    extract_nouns_after_articles([NonNoun | Rest], Nouns).
 extract_nouns_after_articles([_ | Rest], Nouns) :-
     extract_nouns_after_articles(Rest, Nouns).
