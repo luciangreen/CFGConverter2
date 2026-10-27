@@ -26,8 +26,28 @@
 | E: Weak intuitional conclusion → cautious returns undecided | ✅ |
 | F: Malicious Prolog goal text stays as data | ✅ |
 | G: Evidence identifier traces to CFG rules, DCG clauses, interpretations | ✅ |
-| H: All generated modules load in SWI-Prolog | ✅ |
+| H: Generated module loading | ⚠️ Partial; CFG2 generated-module output still needs end-to-end loading coverage |
+
+## Current Implementation Notes
+
+The source adapters now parse JSON Lines as JSON and preserve the complete
+contents of text files. Unsupported constraint conditions are rejected with a
+domain error; only explicitly handled conditions are emitted as semantic
+goals. Regression tests for these cases are in `tests/test_sources.pl` and
+`tests/test_constraints.pl`.
+
+The stage checklist above records the initial implementation milestones; it
+does not mean every item in the full requirements document is complete. In
+particular, the following requirements remain open:
+
+| Area | Status |
+|---|---|
+| Integer/real mathematical constraints | CLP(FD) and CLP(R) are not integrated |
+| Large-input resource controls | Streaming and configurable file/record limits need completion |
+| Executable output | Generated module construction and end-to-end exported module loading need completion |
+| Full traceability | Record/field/source-span provenance is not consistently carried through every output |
+| Verification | Both CFG2 and preserved IdeaCFG plunit suites pass under SWI-Prolog 9.0.4; existing load/encoding warnings remain |
 
 ## Last Updated
 
-2026-08-03
+2026-10-27

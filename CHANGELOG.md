@@ -1,5 +1,24 @@
 # CHANGELOG.md — CFG Converter 2
 
+## Unreleased
+
+### Fixed
+
+- Parse JSON Lines input as JSON objects rather than Prolog terms.
+- Preserve the full contents of text source files without attempting to parse
+  their prefix as a Prolog term.
+- Reject unsupported constraint conditions instead of emitting unresolved
+  semantic goals.
+
+### Documentation and tests
+
+- Document source formats, feature guides, full CFG2 and legacy test commands,
+  and known implementation gaps.
+- Add regression tests for text-file and JSON Lines ingestion and fail-closed
+  constraint translation.
+- Correct the legacy relation tests to call their module-local detectors and
+  assert that each detector matches its example.
+
 ## 0.1.0 — Initial Release (2026-08-03)
 
 ### Added

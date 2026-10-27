@@ -16,6 +16,7 @@
 
 :- use_module(library(lists)).
 :- use_module(library(csv)).
+:- use_module(library(readutil)).
 :- use_module(cfg2_evidence).
 :- use_module(cfg2_schema).
 
@@ -186,12 +187,22 @@ source_adapter(json_lines, file(Path), Options, Evidence) :-
 
 read_json_lines(Stream, Options, Evidence) :-
     use_module(library(http/json)),
-    read_term(Stream, T, [end_of_file(end_of_file)]),
-    (   T = end_of_file
+    read_line_to_string(Stream, Line),
+    (   Line == end_of_file
     ->  Evidence = []
-    ;   json_object_to_evidence(T, Options, Ev),
-        read_json_lines(Stream, Options, Rest),
-        Evidence = [Ev|Rest]
+    ;   normalize_space(string(Trimmed), Line),
+        (   Trimmed == ""
+        ->  read_json_lines(Stream, Options, Evidence)
+        ;   atom_string(JSONAtom, Trimmed),
+            atom_json_term(JSONAtom, JSON, []),
+            (   JSON = json(_)
+            ->  json_object_to_evidence(JSON, Options, Ev),
+                read_json_lines(Stream, Options, Rest),
+                Evidence = [Ev|Rest]
+            ;   throw(error(type_error(json_object, JSON),
+                            source_adapter(json_lines, file, Options, _)))
+            )
+        )
     ).
 
 %% text: Source is atom or file(Path).  Extracts concepts as text evidence.
@@ -213,9 +224,7 @@ source_adapter(text, file(Path), Options, Evidence) :-
 read_file_to_atom(Path, Atom, _Opts) :-
     setup_call_cleanup(
         open(Path, read, Stream),
-        (   read_term(Stream, _, []),
-            stream_to_atom(Stream, Atom)
-        ),
+        stream_to_atom(Stream, Atom),
         close(Stream)
     ).
 

@@ -32,6 +32,11 @@ cfg2_located_at/1
 cfg2_derived_from/1
 ```
 
+Constraint forms are translated only for the explicit condition forms
+implemented in `prolog/cfg2_constraints.pl`. An unsupported condition raises
+`domain_error(safe_constraint_condition, Condition)`; it is not wrapped in a
+placeholder predicate or passed to `call/1`.
+
 ## Intuition Safety
 
 Intuitions are never compiled to unconditional facts. They produce:

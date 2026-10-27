@@ -94,7 +94,9 @@ safe_condition_goal(evidence_measurement(Id, S, V),cfg2_evidence_measurement(Id,
 safe_condition_goal(valid_formula(F),              cfg2_valid_formula(F)).
 safe_condition_goal(valid_stimulus(S),             cfg2_valid_stimulus(S)).
 safe_condition_goal(evidence_in_range(Id),         cfg2_evidence_in_range(Id)).
-safe_condition_goal(Cond, cfg2_unknown_condition(Cond)).
+safe_condition_goal(Cond, _) :-
+    throw(error(domain_error(safe_constraint_condition, Cond),
+                safe_constraint_goal/2)).
 
 %% constraint_to_dcg_goal(+Constraint, +Options, -Goal) is det.
 constraint_to_dcg_goal(C, _Opts, Goal) :-
