@@ -16,25 +16,19 @@ test(extract_sequence_from_contains) :-
 
 test(extract_alternatives_from_may_be) :-
     tokenise_rel('A proof may be induction or contradiction.', Toks),
-    (   detect_alternatives(test, Toks, source_test, Alt)
-    ->  Alt = alternative(_, Members, [], _),
-        length(Members, N), N >= 2
-    ;   true
-    ).
+    ideacfg_relations:detect_alternatives(test, Toks, source_test, Alt),
+    Alt = alternative(_, Members, [], _),
+    length(Members, N), N >= 2.
 
 test(extract_optional_from_may_include) :-
     tokenise_rel('A report may include appendix.', Toks),
-    (   detect_optional(test, Toks, source_test, Opt)
-    ->  Opt = optional(_, _, [], _)
-    ;   true
-    ).
+    ideacfg_relations:detect_optional(test, Toks, source_test, Opt),
+    Opt = optional(_, _, [], _).
 
 test(extract_repetition_from_one_or_more) :-
     tokenise_rel('A body contains one or more arguments.', Toks),
-    (   detect_repetition(test, Toks, source_test, Rep)
-    ->  Rep = repetition(_, _, 1, _, [], _)
-    ;   true
-    ).
+    ideacfg_relations:detect_repetition(test, Toks, source_test, Rep),
+    Rep = repetition(_, _, 1, _, [], _).
 
 test(extract_sequences_list) :-
     idea_from_terms(seq_test, [sequence(body, [intro, main, conclusion], [], src)], IR),

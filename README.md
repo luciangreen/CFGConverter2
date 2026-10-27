@@ -106,6 +106,38 @@ of safe predicates. See [SECURITY.md](SECURITY.md) for details.
 
 ---
 
+## Features and Documentation
+
+The CFG2 pipeline includes canonical 12-field evidence records, validation and
+normalisation, source adapters, schemas, department profiles, confidence and
+intuition policies, evidence-annotated CFG rules, attributed DCG clauses,
+provenance, explanations, export, a CLI and a REPL. The original IdeaCFG
+implementation and API remain available under `ideacfg/`.
+
+Supported source adapters are `prolog_terms`, `csv`, `tsv`, `json`,
+`json_lines`, `text`, `key_value`, `observation_table`, `formula_terms` and
+`indicator_records`. JSON Lines files are read as one JSON object per line;
+text files are preserved as text. CSV/TSV schemas and department mappings are
+described in the guides below.
+
+| Guide | Covers |
+|---|---|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Pipeline, module responsibilities, safety invariants |
+| [EVIDENCE_MODEL.md](EVIDENCE_MODEL.md) | Evidence record fields, validation, provenance |
+| [SCHEMA_GUIDE.md](SCHEMA_GUIDE.md) | Built-in and custom source schemas |
+| [DEPARTMENT_PROFILES.md](DEPARTMENT_PROFILES.md) | Registered departments and policy profiles |
+| [EXAMPLES.md](EXAMPLES.md) | Mathematics, science, humanities, and hybrid examples |
+| [CLI.md](CLI.md) | CLI commands, arguments, formats, and exit status |
+| [REPL.md](REPL.md) | Interactive commands |
+| [SECURITY.md](SECURITY.md) | Input handling and generated-code safety |
+| [PROGRESS.md](PROGRESS.md) | Implemented scope and remaining work |
+| [PROGRAM_REQUIREMENTS.md](PROGRAM_REQUIREMENTS.md) | Full requirements and design goals |
+| [pr1.txt](pr1.txt) | Complete numbered requirements |
+
+Constraint conditions are translated only when they use an explicitly
+allow-listed form. Unsupported conditions raise a domain error rather than
+being emitted as an unresolved generated goal.
+
 ## API Summary
 
 | Predicate | Description |
@@ -122,16 +154,23 @@ of safe predicates. See [SECURITY.md](SECURITY.md) for details.
 
 ---
 
-## Test Command
+## Tests
 
-```bash
-swipl -g "load_files([tests/test_api, tests/test_evidence, tests/test_schema,
-                      tests/test_departments, tests/test_sources,
-                      tests/test_cfg, tests/test_dcg,
-                      tests/test_provenance, tests/test_security]),
-          run_tests, halt." \
-      -t halt prolog/cfg2_api.pl
+Run the complete CFG2 test suite from the repository root:
+
+```sh
+swipl -q -g "expand_file_name('tests/test_*.pl', Files), maplist(load_files, Files), run_tests, halt."
 ```
+
+Run the preserved IdeaCFG suite separately:
+
+```sh
+swipl -q -g "expand_file_name('ideacfg/test/test_*.pl', Files), maplist(load_files, Files), run_tests, halt."
+```
+
+Both commands require SWI-Prolog 8.x or later. Each `tests/test_*.pl` file is a
+plunit suite; source-adapter tests include temporary-file checks for text and
+JSON Lines input.
 
 ---
 

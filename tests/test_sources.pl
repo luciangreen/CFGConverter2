@@ -39,6 +39,17 @@ test(indicator_records, [true(Inds = [I])]) :-
 test(text_atom, [true(Evidence \= [])]) :-
     source_adapter(text, 'A simple text observation.', [id(t1)], Evidence).
 
+test(text_file_preserves_initial_text, [true(Value = 'A plain text file.')]) :-
+    with_temp_file("A plain text file.", Path,
+                   source_adapter(text, file(Path), [id(t2)], [Evidence])),
+    evidence_value(Evidence, Value).
+
+test(json_lines_file_reads_json_objects, [true(Ids = [e1, e2])]) :-
+    Text = "{\"id\":\"e1\",\"department\":\"physics\",\"subject\":\"temperature\",\"value\":273.15}\n{\"id\":\"e2\",\"department\":\"physics\",\"subject\":\"pressure\",\"value\":101}\n",
+    with_temp_file(Text, Path,
+                   source_adapter(json_lines, file(Path), [], Evidence)),
+    maplist(evidence_id, Evidence, Ids).
+
 test(key_value, [true(Evidence \= [])]) :-
     source_adapter(key_value,
                    [id=kv1, department=physics, type=observation,
@@ -51,5 +62,13 @@ test(unsupported_format, [throws(error(unsupported_format(_), _))]) :-
 
 test(missing_file, [throws(error(file_not_found(_), _))]) :-
     source_adapter(csv, file('/nonexistent/path/data.csv'), [], _).
+
+with_temp_file(Text, Path, Goal) :-
+    setup_call_cleanup(
+        tmp_file_stream(text, Path, Stream),
+        write(Stream, Text),
+        close(Stream)
+    ),
+    setup_call_cleanup(true, call(Goal), delete_file(Path)).
 
 :- end_tests(source_adapters).

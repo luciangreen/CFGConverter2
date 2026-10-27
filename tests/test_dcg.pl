@@ -14,7 +14,7 @@ test(dcg_clause_accessors, [true]) :-
 
 test(evidence_guarded_branch, [true(nonvar(Clause))]) :-
     evidence_guarded_branch(olfactory_response, e1,
-                            [requires(e1)], Clause).
+                            [requires(evidence_valid(e1))], Clause).
 
 test(dcg_to_prolog_empty, [true(Text = '')]) :-
     dcg_to_prolog([], Text).

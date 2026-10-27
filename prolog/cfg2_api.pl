@@ -290,7 +290,7 @@ evidence_to_relations([_|Es], Relations) :-
     evidence_to_relations(Es, Relations).
 
 evidence_to_constraints([], []).
-evidence_to_constraints([E|Es], [ir_constraint(CId, rule_candidate(EId), requires(EId), [EId], Dept)|Cs]) :-
+evidence_to_constraints([E|Es], [ir_constraint(CId, rule_candidate(EId), requires(evidence_valid(EId)), [EId], Dept)|Cs]) :-
     evidence_id(E, EId),
     evidence_department(E, Dept),
     atom_concat(c_, EId, CId),
