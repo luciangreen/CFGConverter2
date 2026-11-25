@@ -12,6 +12,18 @@ test(generate_module_produces_text) :-
     atom_length(ModText, L),
     L > 0.
 
+% The generated module parses and generates: it has a top rule, and a rule
+% for each word its grammar uses.
+test(generated_module_parses_and_generates) :-
+    idea_from_terms(cg_sonata, [sequence(sonata, [exposition, development], [], src)], IR),
+    generate_module(cg_sonata, IR, ModText),
+    tmp_file_stream(text, File, S), write(S, ModText), close(S),
+    load_files(File, [if(true)]),
+    findall(T, idea_cg_sonata:idea_generate(cg_sonata, T), Ts),
+    Ts = [Tokens|_],
+    idea_cg_sonata:idea_parse(cg_sonata, Tokens, Tree),
+    Tree = tree(_, [_|_]).
+
 test(generate_module_contains_module_decl) :-
     idea_from_terms(cg_test2, [], IR),
     generate_module(cg_test2, IR, ModText),
