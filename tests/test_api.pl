@@ -57,6 +57,22 @@ test(load_evidence_prolog, [true(Evidence \= [])]) :-
 test(explain_derivation_no_context, [true(nonvar(Expl))]) :-
     explain_derivation(r1, no_result, Expl).
 
+% The generated module holds the rules and evidence, counts the evidence,
+% and parses.
+test(generated_module_parses) :-
+    load_evidence(prolog_terms, [
+        evidence(e1, neuroolfaction, qualitative_measurement, response_intensity, strong,
+                 neuroolfactory_unit, context(stimulus(rose)), 0.82,
+                 provenance(observer(o1)), time(t1), location(lab), [])
+    ], [], Ev),
+    evidence_to_cfg(rose_study_t, neuroolfaction, Ev, R),
+    R = result(_,_,_,_,_,_,_,_,_,_,_,module(M),_,_),
+    sub_atom(M, _, _, _, 'Evidence count: 1'),
+    tmp_file_stream(text, File, S), write(S, M), close(S),
+    load_files(File, [if(true)]),
+    rose_study_t:parse([strong], Tree),
+    Tree = tree(response_intensity, [strong]).
+
 :- end_tests(evidence_api).
 
 :- begin_tests(department_api).

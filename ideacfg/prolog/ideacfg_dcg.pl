@@ -4,6 +4,7 @@
     [
         generate_dcg/3,
         dcg_to_prolog_text/2,
+        dcg_entry_rules/2,
         compile_dcg_module/3,
         dcg_clause/3
     ]).
@@ -39,14 +40,44 @@ dcg_to_prolog_text(DCGClauses, Text) :-
 dcg_clause_to_text(dcg_clause(Lhs, [], []), Text) :-
     format(atom(Text), '~w(epsilon) --> [].', [Lhs]).
 dcg_clause_to_text(dcg_clause(Lhs, Body, ExtraGoals), Text) :-
-    maplist(dcg_sym_to_text, Body, BodyParts),
+    % each nonterminal's tree is named C1, C2, ..., and the node's children are
+    % those trees in order, so a parse gives the whole tree
+    number_body(Body, 1, BodyParts, ChildNames),
     atomic_list_concat(BodyParts, ',\n    ', BodyText),
+    atomic_list_concat(ChildNames, ', ', ChildText),
     (   ExtraGoals = []
-    ->  format(atom(Text), '~w(tree(~w, Children)) -->\n    ~w.\n% Children = Body', [Lhs, Lhs, BodyText])
+    ->  format(atom(Text), '~w(tree(~w, [~w])) -->\n    ~w.', [Lhs, Lhs, ChildText, BodyText])
     ;   maplist([G, GT]>>(format(atom(GT), '    { ~w }', [G])), ExtraGoals, GoalTexts),
         atomic_list_concat(GoalTexts, ',\n', GoalsText),
-        format(atom(Text), '~w(tree(~w, Children)) -->\n    ~w,\n~w.', [Lhs, Lhs, BodyText, GoalsText])
+        format(atom(Text), '~w(tree(~w, [~w])) -->\n    ~w,\n~w.', [Lhs, Lhs, ChildText, BodyText, GoalsText])
     ).
+
+number_body([], _, [], []).
+number_body([nonterminal(N)|Syms], I, [T|Ts], [C|Cs]) :- !,
+    format(atom(C), 'C~w', [I]),
+    format(atom(T), '~w(~w)', [N, C]),
+    I1 is I + 1,
+    number_body(Syms, I1, Ts, Cs).
+number_body([Sym|Syms], I, [T|Ts], Cs) :-
+    dcg_sym_to_text(Sym, T),
+    number_body(Syms, I, Ts, Cs).
+
+%% dcg_entry_rules(+DCGClauses, -Text) is det.
+%  The rules a generated module needs besides its own: top//1, which parses
+%  any root rule (one no other rule uses; every rule if there is none), and a
+%  rule for each nonterminal that is used but not defined, which reads the
+%  word itself, so phrase(top(T), Tokens) can run.
+dcg_entry_rules(DCGClauses, Text) :-
+    findall(L, member(dcg_clause(L, _, _), DCGClauses), Ls0), sort(Ls0, Ls),
+    findall(N, (member(dcg_clause(_, B, _), DCGClauses), member(nonterminal(N), B)), Ns0), sort(Ns0, Ns),
+    subtract(Ls, Ns, Roots0),
+    ( Roots0 = [] -> Roots = Ls ; Roots = Roots0 ),
+    ( Roots = [] -> TopTexts = ['top(epsilon) --> [].']
+    ; findall(T, (member(R, Roots), format(atom(T), 'top(Tree) --> ~w(Tree).', [R])), TopTexts) ),
+    subtract(Ns, Ls, Leaves),
+    findall(T, (member(W, Leaves), format(atom(T), '~w(~q) --> [~q].', [W, W, W])), LeafTexts),
+    append(TopTexts, LeafTexts, All),
+    atomic_list_concat(All, '\n', Text).
 
 dcg_sym_to_text(terminal(T), Text) :- format(atom(Text), '[~w]', [T]).
 dcg_sym_to_text(epsilon, Text) :- Text = '[/* epsilon */]'.
